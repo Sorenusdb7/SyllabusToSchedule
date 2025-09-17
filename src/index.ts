@@ -37,10 +37,6 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'))
 });
 
-app.get('/Upload.js', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'Upload.ts'))
-});
-
 //POST API REQUEST
 //Receives PDF for processing
 app.post("/api/upload", upload.single("pdf"), (req, res) => {
