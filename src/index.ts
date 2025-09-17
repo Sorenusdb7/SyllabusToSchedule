@@ -32,6 +32,31 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+// Home route - HTML
+app.get('/', (req, res) => {
+  res.type('html').send(`
+    <!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8"/>
+        <title>Express on Vercel</title>
+        <link rel="stylesheet" href="/style.css" />
+      </head>
+      <body>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/api-data">API Data</a>
+          <a href="/healthz">Health</a>
+        </nav>
+        <h1>Welcome to Express on Vercel 🚀</h1>
+        <p>This is a minimal example without a database or forms.</p>
+        <img src="/logo.png" alt="Logo" width="120" />
+      </body>
+    </html>
+  `)
+});
+
 //POST API REQUEST
 //Receives PDF for processing
 app.post("/api/upload", upload.single("pdf"), (req, res) => {
@@ -68,7 +93,7 @@ app.post("/api/upload", upload.single("pdf"), (req, res) => {
 //Returns the Event List from the course in the PDF
 app.get('/api/schedule', (req, res) => {
     res.json(pdfInteracter.getEventList())
-})
+});
 
 //GET API REQUEST
 //Returns if the processing is finished
