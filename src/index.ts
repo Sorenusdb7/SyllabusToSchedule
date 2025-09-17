@@ -2,7 +2,6 @@ import express from 'express';
 import path from 'path';
 
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import { PDFInteracter } from "./PDFInteracter.js";
 
 import multer from 'multer';
@@ -10,7 +9,7 @@ import multer from 'multer';
 
 //Set up to get the location of our files
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = 3000;
@@ -84,3 +83,5 @@ app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
 */
+
+export default app
