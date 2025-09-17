@@ -34,7 +34,7 @@ const upload = multer({ storage });
 
 // Home route - HTML
 app.get('/', (req, res) => {
-  res.type('html').send(express.static(path.join(__dirname, '/public')))
+  res.sendFile(path.join(__dirname, 'public', 'index.html'))
 });
 
 //POST API REQUEST
