@@ -1,0 +1,1 @@
+{"version":3,"file":"ClassEventList.d.ts","sourceRoot":"","sources":["../../src/public/ClassEventList.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,UAAU,EAAE,MAAM,iBAAiB,CAAC;AAG7C,qBAAa,cAAc;IAEvB,OAAO,CAAC,MAAM,CAAe;gBAGjB,MAAM,EAAE,UAAU,EAAE;IAMhC,SAAS,IAAI,UAAU,EAAE;IAMzB,SAAS,CAAC,MAAM,EAAE,UAAU,EAAE,GAAG,IAAI;CAIxC"}

@@ -1,0 +1,93 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
+}
+
+.calendar-container {
+    width: 2100px;
+    height: 1200px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.month {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.month ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #333;
+}
+
+.month ul li {
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.month .prev,
+.month .next {
+    cursor: pointer;
+    font-size: 24px;
+    padding: 5px 10px;
+    color: #007bff;
+}
+
+.weekdays,
+.days {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); 
+    text-align: center;
+}
+
+.weekdays li {
+    font-weight: bold;
+    padding: 10px 0;
+    color: #555;
+}
+
+.days li {
+    padding: 10px 0;
+    border-radius: 4px;
+    margin: 2px;
+    cursor: pointer;
+}
+
+.days li.empty {
+    visibility: hidden;
+}
+
+.days li.active {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.events,
+.eventItems {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(1, 1fr); 
+    text-align: center;
+}
+
+.eventItems li {
+    padding: 0;
+    margin: 0;
+}
