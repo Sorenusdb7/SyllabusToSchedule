@@ -2,6 +2,8 @@
 const form = document.getElementById("uploadForm");
 const fileInput = document.getElementById("pdfFile") as HTMLInputElement;
 
+console.log("Loaded");
+
 //If elements are not null
 if(form != null && fileInput != null) {
     //add listener on the submit/upload button
