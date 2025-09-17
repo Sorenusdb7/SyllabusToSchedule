@@ -10,8 +10,9 @@ dotenv.config();
 
 
 //Support/Set-Up Steps
+const openAIKey = process.env.OPENAI_API_KEY;
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: openAIKey,
 });
 
 //Interface to receive a List of Events from a JSON
