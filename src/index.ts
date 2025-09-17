@@ -1,111 +1,84 @@
+import express from 'express';
+import path from 'path';
 
-import * as fs from 'fs';
-import { ClassEvent } from "./public/ClassEvent.js";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { PDFInteracter } from "./PDFInteracter.js";
 
-import OpenAI from 'openai';
-import dotenv from 'dotenv';
-dotenv.config(); // Load environment variables
+import multer from 'multer';
+//import cors from 'cors';
 
-//Reading a JSON
-// Synchronous
+//Set up to get the location of our files
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-let eventList : ClassEvent[] = [];
+const app = express();
+const port = 3000;
 
-interface JSONEventList {
-    events: JSONEvent[];
-}
+let pdfInteracter: PDFInteracter = new PDFInteracter();
 
-interface JSONEvent {
-    name: string;
-    description: string;
-    eventType: string;
-    date: string;
-}
+// Serve static files from public/
+app.use(express.static(path.join(__dirname, '/public')));
+//app.use(cors());
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+//Store received files in uploads folder
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "uploads/"); // Folder to save files
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + "-" + file.originalname);
+    }
 });
 
-async function main() {
-    const file = await openai.files.create({
-    file: fs.createReadStream('TestSyllabus.pdf'), // Or a Blob in the browser
-    purpose: 'user_data', // or 'fine-tune'
+const upload = multer({ storage });
+
+//POST API REQUEST
+//Receives PDF for processing
+app.post("/api/upload", upload.single("pdf"), (req, res) => {
+    console.log("Received a Request");
+    const file = req.file;
+
+    if (!file) {
+        return res.status(400).json({ message: "No file uploaded." });
+    }
+
+    // file.buffer contains the PDF data as a Buffer
+    console.log("Received PDF in memory:");
+    console.log("Original name:", file.originalname);
+    console.log("Size (bytes):", file.size);
+
+    // Check if it's a valid PDF by looking at the header and respond if it isn't
+    const isPDF = file.mimetype === "application/pdf";
+    if (!isPDF) {
+        return res.status(400).json({ message: "Uploaded file is not a valid PDF." });
+    }
+
+    //Starts processing the PDF asynchronously
+    pdfInteracter.processPDF(file.filename);
+
+    // Tell that we've successfully received PDF
+    return res.json({
+        message: "PDF received and is being processed. Please wait.",
+        filename: file.originalname,
+        size: file.size
     });
-    console.log('File uploaded with ID:', file.id);
-    const response2 = await openai.responses.create({
-        input: [{ role: 'user',
-            content: [{type: 'input_file',
-                file_id: file.id
-            },
-            {type: 'input_text',
-                text: 'Read the file and give me a schedule for the course in the format of a JSON. The schedule should be a list of events. Each event should have a name,  description,  an event type, and a date. The event type should be one of class, assignment, test, or project. The date should include the date and the time in this format. Use this as an example of how to format the date: 2025-10-29T10:30:00Z. The time should be the starting time of classes for the course unless specified otherwise.'
-            }]
-        }],
-        model: 'gpt-4o'
-    });
-    console.log(response2.output_text);
-    try {
-        let jsonString: string = response2.output_text;
-        if(jsonString.includes("[") && jsonString.indexOf("[") != 0) {
-            jsonString = jsonString.slice(jsonString.indexOf("["));
-        }
-        if(jsonString.includes("]") && jsonString.indexOf("]") != jsonString.length - 1) {
-            jsonString = jsonString.slice(0, jsonString.indexOf("]") + 1);
-        }
-        const responseJSON: JSONEventList = JSON.parse(jsonString);
-        console.log(responseJSON);
-    } catch (error) {
-        console.error('Error reading or parsing JSON file:', error);
-    }
-}
+});
 
-try {
-    const rawData = fs.readFileSync('./TestExample.json', 'utf8');
-    const myObject: JSONEventList = JSON.parse(rawData);
-    console.log(myObject);
-    console.log(myObject.events[0]?.name);
-    console.log(myObject.events[1]?.date);
-    console.log(myObject.events[2]?.name);
+//GET API REQUEST
+//Returns the Event List from the course in the PDF
+app.get('/api/schedule', (req, res) => {
+    res.json(pdfInteracter.getEventList())
+})
 
-    for (const event of myObject.events) {
-        let classEvent : ClassEvent = new ClassEvent(event.name, event.description, event.eventType, event.date);
-        eventList.push(classEvent);
-    }
+//GET API REQUEST
+//Returns if the processing is finished
+app.get('/api/checkProcess', (req, res) => {
+    console.log("Received a Check");
+    res.json({ "processed": pdfInteracter.getProcessed() });
+});
 
-    let orderedList : ClassEvent[] = [];
-    for (const event of eventList) {
-        if (orderedList.length === 0) {
-            orderedList.push(event);
-        }
-        else {
-            let placed : boolean = false;
-            for (let i = 0; i < orderedList.length; i++) {
-                const date1 = event.getDate();
-                const date2 = orderedList[i]?.getDate();
-                if(date2 !== undefined && date1 < date2) {
-                    orderedList.splice(i, 0, event);
-                    placed = true;
-                    break;
-                }
-                else if(date2 !== undefined && !(date1 < date2) && !(date1 > date2)) {
-                    console.log("Dates were the same");
-                    const name1 = event.getName();
-                    const name2 = orderedList[i]?.getName();
-                    if(name2 !== undefined && name1 < name2) {
-                    orderedList.splice(i, 0, event);
-                    placed = true;
-                    break;
-                    }
-                }
-            }
-            if(placed == false) {
-                orderedList.push(event);
-            }
-        }
-    }
-    console.log(orderedList);
-} catch (error) {
-    console.error('Error reading or parsing JSON file:', error);
-}
-
-main();
+//Starts server
+app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
+});
