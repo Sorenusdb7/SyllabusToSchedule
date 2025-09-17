@@ -38,7 +38,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/Upload.js', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'Upload.js'))
+    res.sendFile(path.join(__dirname, 'public', 'Upload.ts'))
 });
 
 //POST API REQUEST
