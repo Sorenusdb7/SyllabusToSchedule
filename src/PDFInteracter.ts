@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import OpenAI from 'openai';
+import * as OpenAI from 'openai';
 import { ClassEvent } from "./public/ClassEvent.js";
 import { ClassEventList } from "./public/ClassEventList.js";
 
@@ -11,7 +11,7 @@ dotenv.config();
 
 //Support/Set-Up Steps
 const openAIKey = process.env.OPENAI_API_KEY;
-const openai = new OpenAI({
+const openai = new OpenAI.OpenAI({
     apiKey: openAIKey,
 });
 
