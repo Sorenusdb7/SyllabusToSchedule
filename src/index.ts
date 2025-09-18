@@ -41,11 +41,9 @@ app.get('/DynamicCalendar.js', (req, res) => {
 app.get('/calendar.css', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'calendar.css'))
 });
+
 app.get('/ClassEvent.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'ClassEvent.js'))
-});
-app.get('/calendar.css', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'calendar.css'))
 });
 
 app.get('/Upload.js', (req, res) => {
@@ -106,6 +104,7 @@ app.post("/api/upload", upload.single("pdf"), async (req, res) => {
 //GET API REQUEST
 //Returns the Event List from the course in the PDF
 app.get('/api/schedule', (req, res) => {
+    console.log(pdfInteracter.getEventList());
     res.json(pdfInteracter.getEventList())
 });
 

@@ -148,6 +148,8 @@ export class PDFInteracter {
                     }
                 }
 
+                this.eventList.setEvents(orderedList);
+
                 this.processed = true;
             } catch (error) {
                 console.error('Error reading or parsing JSON file:', error);
