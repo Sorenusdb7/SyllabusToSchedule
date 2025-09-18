@@ -30,14 +30,16 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'))
 });
 
-// Home route - HTML
 app.get('/Calendar.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'Calendar.html'))
 });
 
-// Home route - HTML
-app.get('/DyncamicCalendar.js', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'DyncamicCalendar.js'))
+app.get('/DynamicCalendar.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'DynamicCalendar.js'))
+});
+
+app.get('/calendar.css', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'calendar.css'))
 });
 
 app.get('/Upload.js', (req, res) => {
