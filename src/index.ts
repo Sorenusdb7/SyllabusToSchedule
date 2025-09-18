@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url';
 import { PDFInteracter } from "./PDFInteracter.js";
 
 import multer from 'multer';
-//import cors from 'cors';
 
 //Set up to get the location of our files
 const __filename = fileURLToPath(import.meta.url);
@@ -16,14 +15,7 @@ const app = express();
 
 let pdfInteracter: PDFInteracter = new PDFInteracter();
 
-// Serve static files from public/
-//app.use(express.static(path.join(__dirname, '/public')));
-//app.use(cors());
-
 const upload = multer({ storage: multer.memoryStorage() });
-
-console.log("Starting Up 1");
-console.error("Starting Up 2");
 
 // Home route - HTML
 app.get('/', (req, res) => {
@@ -114,12 +106,5 @@ app.get('/api/checkProcess', (req, res) => {
     console.log("Received a Check");
     res.json({ "processed": pdfInteracter.getProcessed() });
 });
-
-//Starts server
-/*
-app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
-});
-*/
 
 export default app
