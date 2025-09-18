@@ -12,7 +12,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = 3000;
 
 let pdfInteracter: PDFInteracter = new PDFInteracter();
 
@@ -31,6 +30,9 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
+
+console.log("Starting Up 1");
+console.error("Starting Up 2");
 
 // Home route - HTML
 app.get('/', (req, res) => {
