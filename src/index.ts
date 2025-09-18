@@ -22,7 +22,7 @@ let pdfInteracter: PDFInteracter = new PDFInteracter();
 //Store received files in uploads folder
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, 'uploads')); // Folder to save files
+        cb(null, "tmp/"); // Folder to save files
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + "-" + file.originalname);
