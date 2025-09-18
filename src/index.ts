@@ -41,6 +41,12 @@ app.get('/DynamicCalendar.js', (req, res) => {
 app.get('/calendar.css', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'calendar.css'))
 });
+app.get('/ClassEvent.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ClassEvent.js'))
+});
+app.get('/calendar.css', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'calendar.css'))
+});
 
 app.get('/Upload.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'Upload.js'))
