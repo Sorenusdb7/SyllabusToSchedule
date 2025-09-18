@@ -61,7 +61,21 @@ export class PDFInteracter {
     }
 
     //Function to process the PDF by sending it to OpenAI, then sorting the result.
-    async processPDF(filePath:String) {
+    async processPDF(filePath: string) {
+
+        console.log("Fetching from blob");
+
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch PDF: ${response.statusText}`);
+            }
+
+        } catch (error) {
+            console.error("Error reading PDF from Vercel Blob:", error);
+        }
+
+        console.log("File received from blob");
 
         //Send the PDF to open AI
         const aifile = await openai.files.create({

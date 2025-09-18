@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import { put } from '@vercel/blob';
 
 import { fileURLToPath } from 'url';
 import { PDFInteracter } from "./PDFInteracter.js";
@@ -19,17 +20,7 @@ let pdfInteracter: PDFInteracter = new PDFInteracter();
 //app.use(express.static(path.join(__dirname, '/public')));
 //app.use(cors());
 
-//Store received files in uploads folder
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, 'tmp')); // Folder to save files
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" + file.originalname);
-    }
-});
-
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 console.log("Starting Up 1");
 console.error("Starting Up 2");
@@ -45,34 +36,53 @@ app.get('/Upload.js', (req, res) => {
 
 //POST API REQUEST
 //Receives PDF for processing
-app.post("/api/upload", upload.single("pdf"), (req, res) => {
+app.post("/api/upload", upload.single("pdf"), async (req, res) => {
     console.log("Received a Request");
-    const file = req.file;
 
-    if (!file) {
-        return res.status(400).json({ message: "No file uploaded." });
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded.' });
+        }
+
+        const file = req.file;
+        
+        // file.buffer contains the PDF data as a Buffer
+        console.log("Received PDF in memory:");
+        console.log("Original name:", file.originalname);
+        console.log("Size (bytes):", file.size);
+
+        console.log("Storing in Blob");
+
+        //contains url
+        const blob = await put(file.originalname, file.buffer, {
+            access: 'public', // Or 'private'
+            addRandomSuffix: true,
+        });
+
+        console.log("Successfully Storing in Blob. URL: " + blob.downloadUrl);
+
+        // Check if it's a valid PDF by looking at the header and respond if it isn't
+        const isPDF = file.mimetype === "application/pdf";
+        if (!isPDF) {
+            return res.status(400).json({ message: "Uploaded file is not a valid PDF." });
+        }
+
+        console.log("Reached Processing");
+
+        //Starts processing the PDF asynchronously
+        pdfInteracter.processPDF(blob.downloadUrl);
+
+        // Tell that we've successfully received PDF
+        res.status(200).json(blob);
+        return res.json({
+            message: "PDF received and is being processed. Please wait.",
+            filename: file.originalname,
+            size: file.size
+        });
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        res.status(500).json({ error: 'Failed to upload file.' });
     }
-
-    // file.buffer contains the PDF data as a Buffer
-    console.log("Received PDF in memory:");
-    console.log("Original name:", file.originalname);
-    console.log("Size (bytes):", file.size);
-
-    // Check if it's a valid PDF by looking at the header and respond if it isn't
-    const isPDF = file.mimetype === "application/pdf";
-    if (!isPDF) {
-        return res.status(400).json({ message: "Uploaded file is not a valid PDF." });
-    }
-
-    //Starts processing the PDF asynchronously
-    pdfInteracter.processPDF(file.filename);
-
-    // Tell that we've successfully received PDF
-    return res.json({
-        message: "PDF received and is being processed. Please wait.",
-        filename: file.originalname,
-        size: file.size
-    });
 });
 
 //GET API REQUEST
