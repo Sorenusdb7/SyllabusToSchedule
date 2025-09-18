@@ -1,6 +1,7 @@
 //Get elements from initial HTML page
 const form = document.getElementById("uploadForm");
 const fileInput = document.getElementById("pdfFile");
+console.log("Loaded");
 //If elements are not null
 if (form != null && fileInput != null) {
     //add listener on the submit/upload button
@@ -22,7 +23,7 @@ if (form != null && fileInput != null) {
             try {
                 //send the file to the server with a POST request
                 console.log("Uploading a file");
-                const response = await fetch("http://localhost:3000/api/upload", {
+                const response = await fetch("/api/upload", {
                     method: "POST",
                     body: formData
                 });

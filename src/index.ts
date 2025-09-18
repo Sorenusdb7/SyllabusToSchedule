@@ -74,7 +74,6 @@ app.post("/api/upload", upload.single("pdf"), async (req, res) => {
         pdfInteracter.processPDF(blob.url);
 
         // Tell that we've successfully received PDF
-        res.status(200).json(blob);
         return res.json({
             message: "PDF received and is being processed. Please wait.",
             filename: file.originalname,

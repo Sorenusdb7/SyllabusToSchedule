@@ -6,6 +6,6 @@ export declare class PDFInteracter {
     setEventList(eventList: ClassEventList): void;
     getProcessed(): boolean;
     setProcessed(processed: boolean): void;
-    processPDF(filePath: String): Promise<void>;
+    processPDF(filePath: string): Promise<void>;
 }
 //# sourceMappingURL=PDFInteracter.d.ts.map

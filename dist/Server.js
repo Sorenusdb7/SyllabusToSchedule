@@ -4,7 +4,6 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { PDFInteracter } from "./PDFInteracter.js";
 import multer from 'multer';
-//import cors from 'cors';
 //Set up to get the location of our files
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

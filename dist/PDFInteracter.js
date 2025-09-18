@@ -1,13 +1,14 @@
 import * as fs from 'fs';
-import OpenAI from 'openai';
+import * as OpenAI from 'openai';
 import { ClassEvent } from "./public/ClassEvent.js";
 import { ClassEventList } from "./public/ClassEventList.js";
 import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 //Support/Set-Up Steps
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+const openAIKey = process.env.OPENAI_API_KEY;
+const openai = new OpenAI.OpenAI({
+    apiKey: openAIKey,
 });
 //Class used to convert a PDF into usable information asynchronously
 export class PDFInteracter {
@@ -33,6 +34,17 @@ export class PDFInteracter {
     }
     //Function to process the PDF by sending it to OpenAI, then sorting the result.
     async processPDF(filePath) {
+        console.log("Fetching from blob");
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch PDF: ${response.statusText}`);
+            }
+        }
+        catch (error) {
+            console.error("Error reading PDF from Vercel Blob:", error);
+        }
+        console.log("File received from blob");
         //Send the PDF to open AI
         const aifile = await openai.files.create({
             file: fs.createReadStream('uploads/' + filePath), // Or a Blob in the browser

@@ -1,93 +1,85 @@
-import * as fs from 'fs';
-import { ClassEvent } from "./public/ClassEvent.js";
-import OpenAI from 'openai';
-import dotenv from 'dotenv';
-dotenv.config(); // Load environment variables
-//Reading a JSON
-// Synchronous
-let eventList = [];
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+import express from 'express';
+import path from 'path';
+import { put } from '@vercel/blob';
+import { fileURLToPath } from 'url';
+import { PDFInteracter } from "./PDFInteracter.js";
+import multer from 'multer';
+//import cors from 'cors';
+//Set up to get the location of our files
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const app = express();
+let pdfInteracter = new PDFInteracter();
+// Serve static files from public/
+//app.use(express.static(path.join(__dirname, '/public')));
+//app.use(cors());
+const upload = multer({ storage: multer.memoryStorage() });
+console.log("Starting Up 1");
+console.error("Starting Up 2");
+// Home route - HTML
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-async function main() {
-    const file = await openai.files.create({
-        file: fs.createReadStream('TestSyllabus.pdf'), // Or a Blob in the browser
-        purpose: 'user_data', // or 'fine-tune'
-    });
-    console.log('File uploaded with ID:', file.id);
-    const response2 = await openai.responses.create({
-        input: [{ role: 'user',
-                content: [{ type: 'input_file',
-                        file_id: file.id
-                    },
-                    { type: 'input_text',
-                        text: 'Read the file and give me a schedule for the course in the format of a JSON. The schedule should be a list of events. Each event should have a name,  description,  an event type, and a date. The event type should be one of class, assignment, test, or project. The date should include the date and the time in this format. Use this as an example of how to format the date: 2025-10-29T10:30:00Z. The time should be the starting time of classes for the course unless specified otherwise.'
-                    }]
-            }],
-        model: 'gpt-4o'
-    });
-    console.log(response2.output_text);
+app.get('/Upload.js', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'Upload.js'));
+});
+//POST API REQUEST
+//Receives PDF for processing
+app.post("/api/upload", upload.single("pdf"), async (req, res) => {
+    console.log("Received a Request");
     try {
-        let jsonString = response2.output_text;
-        if (jsonString.includes("[") && jsonString.indexOf("[") != 0) {
-            jsonString = jsonString.slice(jsonString.indexOf("["));
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded.' });
         }
-        if (jsonString.includes("]") && jsonString.indexOf("]") != jsonString.length - 1) {
-            jsonString = jsonString.slice(0, jsonString.indexOf("]") + 1);
+        const file = req.file;
+        // file.buffer contains the PDF data as a Buffer
+        console.log("Received PDF in memory:");
+        console.log("Original name:", file.originalname);
+        console.log("Size (bytes):", file.size);
+        console.log("Storing in Blob");
+        //contains url
+        const blob = await put(file.originalname, file.buffer, {
+            access: 'public', // Or 'private'
+            addRandomSuffix: true,
+        });
+        console.log("Successfully Storing in Blob. URL: " + blob.url);
+        console.log("Successfully Storing in Blob. Download URL: " + blob.downloadUrl);
+        // Check if it's a valid PDF by looking at the header and respond if it isn't
+        const isPDF = file.mimetype === "application/pdf";
+        if (!isPDF) {
+            return res.status(400).json({ message: "Uploaded file is not a valid PDF." });
         }
-        const responseJSON = JSON.parse(jsonString);
-        console.log(responseJSON);
+        console.log("Reached Processing");
+        //Starts processing the PDF asynchronously
+        pdfInteracter.processPDF(blob.url);
+        // Tell that we've successfully received PDF
+        return res.json({
+            message: "PDF received and is being processed. Please wait.",
+            filename: file.originalname,
+            size: file.size
+        });
     }
     catch (error) {
-        console.error('Error reading or parsing JSON file:', error);
+        console.error('Error uploading file:', error);
+        res.status(500).json({ error: 'Failed to upload file.' });
     }
-}
-try {
-    const rawData = fs.readFileSync('./TestExample.json', 'utf8');
-    const myObject = JSON.parse(rawData);
-    console.log(myObject);
-    console.log(myObject.events[0]?.name);
-    console.log(myObject.events[1]?.date);
-    console.log(myObject.events[2]?.name);
-    for (const event of myObject.events) {
-        let classEvent = new ClassEvent(event.name, event.description, event.eventType, event.date);
-        eventList.push(classEvent);
-    }
-    let orderedList = [];
-    for (const event of eventList) {
-        if (orderedList.length === 0) {
-            orderedList.push(event);
-        }
-        else {
-            let placed = false;
-            for (let i = 0; i < orderedList.length; i++) {
-                const date1 = event.getDate();
-                const date2 = orderedList[i]?.getDate();
-                if (date2 !== undefined && date1 < date2) {
-                    orderedList.splice(i, 0, event);
-                    placed = true;
-                    break;
-                }
-                else if (date2 !== undefined && !(date1 < date2) && !(date1 > date2)) {
-                    console.log("Dates were the same");
-                    const name1 = event.getName();
-                    const name2 = orderedList[i]?.getName();
-                    if (name2 !== undefined && name1 < name2) {
-                        orderedList.splice(i, 0, event);
-                        placed = true;
-                        break;
-                    }
-                }
-            }
-            if (placed == false) {
-                orderedList.push(event);
-            }
-        }
-    }
-    console.log(orderedList);
-}
-catch (error) {
-    console.error('Error reading or parsing JSON file:', error);
-}
-main();
+});
+//GET API REQUEST
+//Returns the Event List from the course in the PDF
+app.get('/api/schedule', (req, res) => {
+    res.json(pdfInteracter.getEventList());
+});
+//GET API REQUEST
+//Returns if the processing is finished
+app.get('/api/checkProcess', (req, res) => {
+    console.log("Received a Check");
+    res.json({ "processed": pdfInteracter.getProcessed() });
+});
+//Starts server
+/*
+app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
+});
+*/
+export default app;
 //# sourceMappingURL=index.js.map
