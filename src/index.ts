@@ -45,6 +45,12 @@ app.get('/Upload.js', (req, res) => {
 app.get('/Upload.js.map', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'Upload.js.map'))
 });
+app.get('/DynamicCalendar.js.map', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'DynamicCalendar.js.map'))
+});
+app.get('/ClassEvent.js.map', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'ClassEvent.js.map'))
+});
 
 //POST API REQUEST
 //Receives PDF for processing
