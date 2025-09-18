@@ -59,7 +59,8 @@ app.post("/api/upload", upload.single("pdf"), async (req, res) => {
             addRandomSuffix: true,
         });
 
-        console.log("Successfully Storing in Blob. URL: " + blob.downloadUrl);
+        console.log("Successfully Storing in Blob. URL: " + blob.url);
+        console.log("Successfully Storing in Blob. Download URL: " + blob.downloadUrl);
 
         // Check if it's a valid PDF by looking at the header and respond if it isn't
         const isPDF = file.mimetype === "application/pdf";
@@ -70,7 +71,7 @@ app.post("/api/upload", upload.single("pdf"), async (req, res) => {
         console.log("Reached Processing");
 
         //Starts processing the PDF asynchronously
-        pdfInteracter.processPDF(blob.downloadUrl);
+        pdfInteracter.processPDF(blob.url);
 
         // Tell that we've successfully received PDF
         res.status(200).json(blob);
