@@ -22,6 +22,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'))
 });
 
+//Routes to get all files that Vercel might need
 app.get('/Calendar.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'Calendar.html'))
 });
@@ -73,20 +74,15 @@ app.post("/api/upload", upload.single("pdf"), async (req, res) => {
 
         //contains url
         const blob = await put(file.originalname, file.buffer, {
-            access: 'public', // Or 'private'
+            access: 'public', 
             addRandomSuffix: true,
         });
-
-        console.log("Successfully Storing in Blob. URL: " + blob.url);
-        console.log("Successfully Storing in Blob. Download URL: " + blob.downloadUrl);
 
         // Check if it's a valid PDF by looking at the header and respond if it isn't
         const isPDF = file.mimetype === "application/pdf";
         if (!isPDF) {
             return res.status(400).json({ message: "Uploaded file is not a valid PDF." });
         }
-
-        console.log("Reached Processing");
 
         //Starts processing the PDF asynchronously
         pdfInteracter.processPDF(blob.url);
